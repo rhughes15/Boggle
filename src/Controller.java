@@ -2,6 +2,17 @@ import javafx.event.EventHandler;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.input.MouseEvent;
 
+//***********************************
+// Ryan Hughes
+//
+// This is the main game coordinator. It has access
+// to all of the main components of the game and controls the
+// flow of information between them as well as the overall
+// order of events as the game progresses. When it is first
+// initialized, it creates all of the necessary objects and
+// displays a 4x4 board.
+//***********************************
+
 public class Controller
 {
   private Dictionary dict;
@@ -9,6 +20,9 @@ public class Controller
   private Board board;
   private Canvas canvas;
   private Handler handler;
+  private String currentWord;
+  private Timer timer;
+  private boolean gameOn;
 
   public Controller(Canvas canvas)
   {
@@ -17,11 +31,14 @@ public class Controller
 
   private void init(Canvas canvas)
   {
+    gameOn = false;
+    currentWord = "";
     dict = new Dictionary();
     this.canvas = canvas;
-    player = new Player();
+    player = new Player(canvas.getGraphicsContext2D());
     board = new Board(4, canvas.getGraphicsContext2D());
     handler = new Handler(this);
+    timer = new Timer(canvas.getGraphicsContext2D(), this);
     this.canvas.setOnMousePressed(new EventHandler<MouseEvent>() {
       @Override
       public void handle(MouseEvent event) {
@@ -46,28 +63,54 @@ public class Controller
     });
   }
 
-  public void run()
+  public void display()
   {
-    String choice = player.takeTurn();
-    while(!(choice.equalsIgnoreCase("q")))
-    {
-      board.displayBoard();
-      if(dict.contains(choice)) System.out.println(choice + " is in the dictionary");
-      else System.out.println(choice + " is NOT in the dictionary");
-      choice = player.takeTurn();
-    }
+    board.displayBoard();
+    player.display();
+    timer.display();
   }
 
-  public void displayBoard() {board.displayBoard();}
-
-  public void handleButtonPress(String text)
+  public void startGame()
   {
-    if(dict.contains(text)) System.out.print("word is in the dictionary ");
-    else System.out.print("word is NOT in the dictionary ");
+    player.resetScore();
+    timer.start();
+    gameOn = true;
+  }
 
-    if(board.contains(text)) System.out.println("word is on the board");
-    else System.out.println("word is NOT on the board");
+  public void stopGame()
+  {
+    timer.stop();
+    gameOn = false;
+    int size = board.getSize();
+    board = new Board(size, canvas.getGraphicsContext2D());
+  }
+
+  public void handleMouseReleased()
+  {
+    if(dict.contains(currentWord) && gameOn)
+    {
+      player.addGoodWord(currentWord);
+      player.score(currentWord.length() * 10);
+    }
+    else if(gameOn)
+    {
+      player.addBadWord(currentWord);
+    }
+    currentWord = "";
+  }
+
+  public void changeBoardSize()
+  {
+    if(board.getSize() == 4) board = new Board(5, canvas.getGraphicsContext2D());
+    else board = new Board(4, canvas.getGraphicsContext2D());
+    board.displayBoard();
+  }
+
+  public void addCharToWord(char c)
+  {
+    currentWord += c;
   }
 
   public Board getBoard() { return board; }
+  public boolean gameOn() {return gameOn;}
 }

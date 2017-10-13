@@ -1,16 +1,30 @@
 import javafx.scene.canvas.GraphicsContext;
 
+//***********************************
+// Ryan Hughes
+//
+// This class creates a two dimensional character
+// array of random characters and a one dimensional
+// ArrayList of tiles based on the character array
+// with the necessary data to be displayed graphically.
+//
+// Will eventually have letter frequencies specified for
+// smoother game play.
+//***********************************
+
 import java.util.ArrayList;
 
 public class Board
 {
   private char[][] charBoard;
   private ArrayList<Tile> tileBoard;
+  private GraphicsContext gc;
 
   // constructor initializes two dimensional charBoard with the characters for the board,
   // initializes the one dimensional tileBoard with the tiles for the board
   public Board(int size, GraphicsContext gc)
   {
+    this.gc = gc;
     charBoard = new char[size][size];
     for(int i = 0; i < size; i++)
     {
@@ -37,10 +51,12 @@ public class Board
   // displays each tile in the tileBoard
   public void displayBoard()
   {
-    for(Tile t : tileBoard)
-    {
-      t.display();
-    }
+    //clear the background
+    gc.setFill(Reference.BACKGROUND_COLOR);
+    gc.fillRect(0, 0, Reference.SCREEN_WIDTH, Reference.SCREEN_HEIGHT);
+
+    //display the tiles
+    for(Tile t : tileBoard) t.display();
   }
 
   // returns true if the word is on the board
@@ -72,4 +88,5 @@ public class Board
   }
 
   public ArrayList<Tile> getTiles() { return tileBoard; }
+  public int getSize() { return charBoard.length; }
 }
